@@ -1,6 +1,6 @@
 const {validationResult} = require('express-validator');
 const authService = require('../service/authService');
-const ApiError = require('../exceptions/ariError');
+const Error = require('../exceptions/ariError');
 
 class AuthController {
 
@@ -8,7 +8,7 @@ class AuthController {
         try {
             const errors = validationResult(req.body)
             if (!errors.isEmpty()) {
-                return next(ApiError.BadRequest('Ошибка валидации'), errors.array())
+                return next(Error.BadRequest('Ошибка валидации'), errors.array())
             }
             const {name, surname, middlename, email, username, password} = req.body;
             const user = await authService.register(name, surname, middlename, email, username, password)
@@ -21,6 +21,10 @@ class AuthController {
 
     async login(req, res, next) {
         try {
+            const errors = validationResult(req.body)
+            if (!errors.isEmpty()) {
+                return next(Error.BadRequest('Ошибка валидации'), errors.array())
+            }
             const {email, password} = req.body;
             const userData = await authService.login(email, password);
             res.cookie('refreshToken', userData.refreshToken, {maxAge: 30 * 60 * 1000, httpOnly: true})
@@ -56,11 +60,12 @@ class AuthController {
         try {
             const link = req.params.link
             await authService.verifyAccount(link);
-            return res.redirect('localhost:4000/api/users')
+            return res.status(200).json({message: 'Аккаунт успешно подтверждён'})
         } catch (e) {
             next(e)
         }
     }
+
 
 }
 

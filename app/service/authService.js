@@ -29,7 +29,6 @@ class UserService {
             throw ApiError.BadRequest('Некорректная ссылка')
         }
         user.is_confirmed = true;
-
         await user.save();
     }
     async login(email, password) {
