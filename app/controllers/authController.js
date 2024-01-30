@@ -4,18 +4,18 @@ const Error = require('../exceptions/ariError');
 
 class AuthController {
 
-    async register(req, res, next) {
+    async register(req, res) {
         try {
             const errors = validationResult(req.body)
             if (!errors.isEmpty()) {
-                return next(Error.BadRequest('Ошибка валидации'), errors.array())
+                return res.status(400).json(errors.array())
             }
             const {name, surname, middlename, email, username, password} = req.body;
             const user = await authService.register(name, surname, middlename, email, username, password)
             res.cookie('refreshToken', user.refreshToken, {maxAge: 30 * 60 * 1000, httpOnly: true})
             return res.json(user)
         } catch (e) {
-            next(e)
+            return res.status(400).json(e._message)
         }
     }
 
